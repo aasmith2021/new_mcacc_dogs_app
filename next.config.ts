@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/cat**",
       },
+      {
+        protocol: "https",
+        hostname: "placedog.net",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

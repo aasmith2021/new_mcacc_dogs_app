@@ -1,6 +1,6 @@
 'use client';
 
-import { Container, Typography, Box, AppBar, Toolbar, Card, CardContent, CircularProgress } from '@mui/material';
+import { Container, Typography, Box, AppBar, Toolbar, Card, CardContent, CircularProgress, CardMedia } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { type Animal } from '../types';
 
@@ -44,6 +44,11 @@ export default function Home() {
               <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
                 {data.map((animal) => (
                   <Card key={animal.id}>
+                    <CardMedia
+                      sx={{ height: 300 }}
+                      image={animal.image}
+                      title={animal.name}
+                    />
                     <CardContent>
                       <Typography variant="h5" component="div">
                         {animal.name}
@@ -55,7 +60,11 @@ export default function Home() {
                         ID: {animal.id}<br />
                         Age: {animal.age}<br />
                         Gender: {animal.gender}<br />
-                        Location: {animal.location}
+                        Weight: {animal.weight}<br />
+                        Arrived: {animal.arrivalDate}<br />
+                        Location: {animal.location}<br />
+                        Level: {animal.level}<br />
+                        Adoption Fee: {animal.adoptionFee}
                       </Typography>
                     </CardContent>
                   </Card>

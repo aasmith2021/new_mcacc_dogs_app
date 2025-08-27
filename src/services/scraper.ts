@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { type Animal } from '../types'
+import { Animal } from '../app/types'
 
 const ANIMAL_IDS_BASE_URL = 'https://apps.pets.maricopa.gov/adoptPets/Home/AnimalGrid?sizeFilter=1&ageFilter=1&genderFilter=1&pageNumber=';
 const ANIMAL_DATA_PAGE_BASE_URL = 'https://apps.pets.maricopa.gov/adoptPets/Home/Details/';
@@ -130,7 +130,6 @@ export const scrapeAllAnimalData = async (allAnimalIds: string[]) => {
   const allAnimalData: Animal[] = [];
 
   for (const animalId of allAnimalIds) {
-    console.log('Scraping', animalId);
     allAnimalData.push(await scrapeSingleAnimalData(animalId));
   }
 

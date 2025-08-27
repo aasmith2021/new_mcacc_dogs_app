@@ -2,32 +2,18 @@
 
 import { Container, Typography, Box, AppBar, Toolbar, Card, CardContent, CircularProgress } from '@mui/material';
 import { useEffect, useState } from 'react';
-
-interface Animal {
-  name: string;
-  id: string;
-  breed: string;
-  age: string;
-  gender: string;
-  location: string;
-  image: string;
-}
-
-interface ScrapeData {
-  animals: Animal[];
-  scrapedAt: string;
-}
+import { type Animal } from '../types';
 
 export default function Home() {
-  const [data, setData] = useState<ScrapeData | null>(null);
+  const [data, setData] = useState<Animal[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAnimals = async () => {
       try {
         const response = await fetch('/api/scrape');
-        const scrapeData = await response.json();
-        setData(scrapeData);
+        const { animals } = await response.json();
+        setData(animals);
       } catch (error) {
         console.error('Error fetching animals:', error);
       } finally {
@@ -55,11 +41,8 @@ export default function Home() {
             </Box>
           ) : data ? (
             <>
-              <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
-                Last updated: {new Date(data.scrapedAt).toLocaleString()}
-              </Typography>
               <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-                {data.animals.map((animal) => (
+                {data.map((animal) => (
                   <Card key={animal.id}>
                     <CardContent>
                       <Typography variant="h5" component="div">

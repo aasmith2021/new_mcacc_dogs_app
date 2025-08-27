@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { Animal } from '../app/types'
+import { type Animal } from '../types'
 
 const ANIMAL_IDS_BASE_URL = 'https://apps.pets.maricopa.gov/adoptPets/Home/AnimalGrid?sizeFilter=1&ageFilter=1&genderFilter=1&pageNumber=';
 const ANIMAL_DATA_PAGE_BASE_URL = 'https://apps.pets.maricopa.gov/adoptPets/Home/Details/';

@@ -1,61 +1,8 @@
+import { chunk } from 'lodash';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { Animal } from '../types';
-
-const ANIMAL_IDS_BASE_URL = 'https://apps.pets.maricopa.gov/adoptPets/Home/AnimalGrid?sizeFilter=1&ageFilter=1&genderFilter=1&pageNumber=';
-const ANIMAL_DATA_PAGE_BASE_URL = 'https://apps.pets.maricopa.gov/adoptPets/Home/Details/';
-const GET_OPTIONS = {
-  headers: {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
-  },
-};
-
-export const fetchAnimalIdBatch = async (pageNumber: number) => {
-  console.log(`Fetching Animal IDs Batch #${pageNumber + 1}`);
-  const animalIdsBatch: string[] = [];
-  const url = `${ANIMAL_IDS_BASE_URL}${pageNumber}`;
-  const response = await axios.get(url, GET_OPTIONS);
-  const html = response.data;
-  const $ = cheerio.load(html);
-
-  $('li.dogCard').each((_i, el) => {
-    const id = $(el).find('button').first().attr().id.replace('Add_', '').trim();
-    animalIdsBatch.push(id);
-  });
-
-  return animalIdsBatch;
-};
-
-export const scrapeAnimalIds = async () => {
-  const animalIds: string[] = [];
-  let pageNumber = 0;
-  let standardBatchLength: number | null = null;
-  let isNextPage = true;
-
-  while (isNextPage) {
-    try {
-      const batchIds = await fetchAnimalIdBatch(pageNumber);
-      animalIds.push(...batchIds);
-
-      if (standardBatchLength === null) {
-        standardBatchLength = batchIds.length;
-      }
-
-      // For testing, only fetch one page of data
-      // TODO: remove next line and uncomment following code after testing
-      isNextPage = false;
-      // if (batchIds.length < standardBatchLength) {
-      //   isNextPage = false;
-      // }
-
-      pageNumber += 1;
-    } catch (error) {
-      console.error('Error scraping animal IDs', error);
-    }
-  }
-
-  return animalIds;
-};
+import { ANIMAL_DATA_PAGE_BASE_URL, CHUNK_SIZE, GET_OPTIONS } from './utils';
 
 export const scrapeSingleAnimalData = async (id: string): Promise<Animal> => {
   console.log(`Fetching Animal Data for ID #${id}`);
@@ -128,17 +75,17 @@ export const scrapeSingleAnimalData = async (id: string): Promise<Animal> => {
 
 export const scrapeAllAnimalData = async (allAnimalIds: string[]) => {
   const allAnimalData: Animal[] = [];
+  const animalIdBatches: string[][] = chunk(allAnimalIds, CHUNK_SIZE);
 
-  for (const animalId of allAnimalIds) {
-    allAnimalData.push(await scrapeSingleAnimalData(animalId));
+  for (const animalIdBatch of animalIdBatches) {
+    const animalDataBatchFetchResults = await Promise.allSettled(animalIdBatch.map(scrapeSingleAnimalData));
+
+    animalDataBatchFetchResults.forEach((animalDataFetchResult) => {
+      if (animalDataFetchResult.status === 'fulfilled') {
+        allAnimalData.push(animalDataFetchResult.value);
+      }
+    });
   }
 
-  return allAnimalData
+  return allAnimalData;
 };
-
-export const scrapeAnimals = async () => {
-  const allAnimalIds = await scrapeAnimalIds();
-  // For testing, only get data for first 3 animals
-  // TODO: Remove .slice(0,3) after testing
-  return scrapeAllAnimalData(allAnimalIds.slice(0,3));
-}

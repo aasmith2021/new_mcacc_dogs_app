@@ -17,6 +17,7 @@
     "@mui/material-nextjs": "^7.3.0",
     "axios": "^1.7.2",
     "cheerio": "^1.0.0-rc.12",
+    "lodash": "^4.17.21",
     "next": "15.5.0",
     "react": "19.1.0",
     "react-dom": "19.1.0"
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/cheerio": "^0.22.35",
+    "@types/lodash": "^4.17.20",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

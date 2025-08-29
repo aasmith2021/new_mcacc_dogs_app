@@ -23,7 +23,7 @@ export const scrapeSingleAnimalData = async (id: string): Promise<Animal> => {
     level: '',
     adoptionFee: '',
     image: '',
-  }
+  };
 
   animalData.image = $('div.basicPetInfo img').attr().src;
 

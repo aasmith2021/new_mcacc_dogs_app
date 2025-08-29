@@ -15,7 +15,7 @@ export const fetchAnimalIdBatch = async (pageNumber: number) => {
     animalIdsBatch.push(id);
   });
 
-  return animalIdsBatch
+  return animalIdsBatch;
 };
 
 export const scrapeAnimalIds = async () => {

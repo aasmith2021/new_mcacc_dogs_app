@@ -5,19 +5,25 @@ import { useEffect, useState } from 'react';
 import { type Animal } from '../types';
 
 export default function Home() {
-  const [data, setData] = useState<Animal[] | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [animalData, setAnimalData] = useState<Animal[] | null>(null);
+  const [loadingAnimals, setLoadingAnimals] = useState(true);
 
   useEffect(() => {
     const fetchAnimals = async () => {
       try {
-        const response = await fetch('/api/scrape');
-        const { animals } = await response.json();
-        setData(animals);
+        const animalIdsResponse = await fetch('/api/scrape/animalIds');
+        const { animalIds } = await animalIdsResponse.json();
+
+        console.log(animalIds.length);
+
+        const animalDataRequest = new Request('/api/scrape/animalData', { method: 'POST', body: JSON.stringify(animalIds) } );
+        const animalDataResponse = await fetch(animalDataRequest);
+        const { animals } = await animalDataResponse.json();
+        setAnimalData(animals);
       } catch (error) {
-        console.error('Error fetching animals:', error);
+        console.error('Error fetching animal data:', error);
       } finally {
-        setLoading(false);
+        setLoadingAnimals(false);
       }
     };
 
@@ -35,14 +41,17 @@ export default function Home() {
       </AppBar>
       <Container maxWidth="lg">
         <Box sx={{ my: 4 }}>
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          {loadingAnimals ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
               <CircularProgress />
+              <Typography variant="h6" component="div">
+                Loading Animals...
+              </Typography>
             </Box>
-          ) : data ? (
+          ) : animalData ? (
             <>
               <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-                {data.map((animal) => (
+                {animalData.map((animal) => (
                   <Card key={animal.id}>
                     <CardMedia
                       sx={{ height: 300 }}

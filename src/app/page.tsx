@@ -14,6 +14,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  TextField,
 } from '@mui/material';
 import { useEffect, useState, useMemo } from 'react';
 import { type Animal } from '../types';
@@ -24,11 +25,41 @@ export default function Home() {
   const [animalData, setAnimalData] = useState<Animal[] | null>(null);
   const [loadingAnimals, setLoadingAnimals] = useState(true);
   const [sortBy, setSortBy] = useState<keyof Animal>('name');
+  const [nameFilter, setNameFilter] = useState('');
+  const [breedFilter, setBreedFilter] = useState('');
+  const [ageFilter, setAgeFilter] = useState('');
+  const [weightFilter, setWeightFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
+  const [arrivalDateFilter, setArrivalDateFilter] = useState('');
+  const [genderFilter, setGenderFilter] = useState('All');
+  const [adoptionFeeFilter, setAdoptionFeeFilter] = useState('');
 
-  const sortedAnimalData = useMemo(() => {
+  const genderOptions = useMemo(() => {
+    if (!animalData) return ['All'];
+    const genders = animalData.map(animal => animal.gender);
+    return ['All', ...Array.from(new Set(genders))];
+  }, [animalData]);
+
+  const filteredAnimalData = useMemo(() => {
     if (!animalData) return null;
 
-    return [...animalData].sort((a, b) => {
+    return animalData.filter(animal => {
+      const nameMatch = animal.name.toLowerCase().includes(nameFilter.toLowerCase());
+      const breedMatch = animal.breed.toLowerCase().includes(breedFilter.toLowerCase());
+      const ageMatch = animal.age.toLowerCase().includes(ageFilter.toLowerCase());
+      const weightMatch = animal.weight.toLowerCase().includes(weightFilter.toLowerCase());
+      const locationMatch = animal.location.toLowerCase().includes(locationFilter.toLowerCase());
+      const arrivalDateMatch = animal.arrivalDate.toLowerCase().includes(arrivalDateFilter.toLowerCase());
+      const genderMatch = genderFilter === 'All' || animal.gender === genderFilter;
+      const adoptionFeeMatch = animal.adoptionFee.toLowerCase().includes(adoptionFeeFilter.toLowerCase());
+      return nameMatch && breedMatch && ageMatch && weightMatch && locationMatch && arrivalDateMatch && genderMatch && adoptionFeeMatch;
+    });
+  }, [animalData, nameFilter, breedFilter, ageFilter, weightFilter, locationFilter, arrivalDateFilter, genderFilter, adoptionFeeFilter]);
+
+  const sortedAnimalData = useMemo(() => {
+    if (!filteredAnimalData) return null;
+
+    return [...filteredAnimalData].sort((a, b) => {
       const aValue = a[sortBy];
       const bValue = b[sortBy];
 
@@ -36,7 +67,7 @@ export default function Home() {
       if (aValue > bValue) return 1;
       return 0;
     });
-  }, [animalData, sortBy]);
+  }, [filteredAnimalData, sortBy]);
 
   useEffect(() => {
     const fetchAnimals = async () => {
@@ -80,8 +111,76 @@ export default function Home() {
             </Box>
           ) : sortedAnimalData ? (
             <>
-              <Box sx={{ marginBottom: 4 }}>
-                <FormControl fullWidth>
+              <Box sx={{
+                marginBottom: 4,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: 2
+              }}>
+                <TextField
+                  label="Filter by Name"
+                  variant="outlined"
+                  value={nameFilter}
+                  onChange={(e) => setNameFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Filter by Breed"
+                  variant="outlined"
+                  value={breedFilter}
+                  onChange={(e) => setBreedFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Filter by Age"
+                  variant="outlined"
+                  value={ageFilter}
+                  onChange={(e) => setAgeFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Filter by Weight"
+                  variant="outlined"
+                  value={weightFilter}
+                  onChange={(e) => setWeightFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Filter by Location"
+                  variant="outlined"
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Filter by Arrival Date"
+                  variant="outlined"
+                  value={arrivalDateFilter}
+                  onChange={(e) => setArrivalDateFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Filter by Adoption Fee"
+                  variant="outlined"
+                  value={adoptionFeeFilter}
+                  onChange={(e) => setAdoptionFeeFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <FormControl sx={{ flex: 1 }}>
+                  <InputLabel id="gender-filter-label">Filter by Gender</InputLabel>
+                  <Select
+                    labelId="gender-filter-label"
+                    value={genderFilter}
+                    onChange={(e) => setGenderFilter(e.target.value)}
+                  >
+                    {genderOptions.map((gender) => (
+                      <MenuItem key={gender} value={gender}>
+                        {gender}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl sx={{ flex: 1 }}>
                   <InputLabel id="sort-by-label">Sort By</InputLabel>
                   <Select
                     labelId="sort-by-label"

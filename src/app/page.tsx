@@ -16,6 +16,9 @@ import {
   InputLabel,
   TextField,
 } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useEffect, useState, useMemo } from 'react';
 import { type Animal } from '../types';
 
@@ -30,7 +33,7 @@ export default function Home() {
   const [ageFilter, setAgeFilter] = useState('');
   const [weightFilter, setWeightFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
-  const [arrivalDateFilter, setArrivalDateFilter] = useState('');
+  const [arrivalDateFilter, setArrivalDateFilter] = useState<Date | null>(null);
   const [genderFilter, setGenderFilter] = useState('All');
   const [adoptionFeeFilter, setAdoptionFeeFilter] = useState('');
 
@@ -49,7 +52,19 @@ export default function Home() {
       const ageMatch = animal.age.toLowerCase().includes(ageFilter.toLowerCase());
       const weightMatch = animal.weight.toLowerCase().includes(weightFilter.toLowerCase());
       const locationMatch = animal.location.toLowerCase().includes(locationFilter.toLowerCase());
-      const arrivalDateMatch = animal.arrivalDate.toLowerCase().includes(arrivalDateFilter.toLowerCase());
+
+      let arrivalDateMatch = true;
+      if (arrivalDateFilter) {
+        const animalArrivalDate = new Date(animal.arrivalDate);
+        if (!isNaN(animalArrivalDate.getTime())) {
+          arrivalDateFilter.setHours(0, 0, 0, 0);
+          animalArrivalDate.setHours(0, 0, 0, 0);
+          arrivalDateMatch = animalArrivalDate.getTime() >= arrivalDateFilter.getTime();
+        } else {
+          arrivalDateMatch = false;
+        }
+      }
+
       const genderMatch = genderFilter === 'All' || animal.gender === genderFilter;
       const adoptionFeeMatch = animal.adoptionFee.toLowerCase().includes(adoptionFeeFilter.toLowerCase());
       return nameMatch && breedMatch && ageMatch && weightMatch && locationMatch && arrivalDateMatch && genderMatch && adoptionFeeMatch;
@@ -92,7 +107,7 @@ export default function Home() {
   }, []);
 
   return (
-    <>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
       <AppBar position="static" sx={{ backgroundColor: 'primary.main', color: 'white' }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
@@ -152,11 +167,10 @@ export default function Home() {
                   onChange={(e) => setLocationFilter(e.target.value)}
                   sx={{ flex: 1 }}
                 />
-                <TextField
+                <DatePicker
                   label="Filter by Arrival Date"
-                  variant="outlined"
                   value={arrivalDateFilter}
-                  onChange={(e) => setArrivalDateFilter(e.target.value)}
+                  onChange={(newValue) => setArrivalDateFilter(newValue)}
                   sx={{ flex: 1 }}
                 />
                 <TextField
@@ -230,6 +244,6 @@ export default function Home() {
           )}
         </Box>
       </Container>
-    </>
+    </LocalizationProvider>
   );
 }

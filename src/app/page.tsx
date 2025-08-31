@@ -32,6 +32,7 @@ export default function Home() {
   const [locationFilter, setLocationFilter] = useState('');
   const [arrivalDateFilter, setArrivalDateFilter] = useState('');
   const [genderFilter, setGenderFilter] = useState('All');
+  const [adoptionFeeFilter, setAdoptionFeeFilter] = useState('');
 
   const genderOptions = useMemo(() => {
     if (!animalData) return ['All'];
@@ -50,9 +51,10 @@ export default function Home() {
       const locationMatch = animal.location.toLowerCase().includes(locationFilter.toLowerCase());
       const arrivalDateMatch = animal.arrivalDate.toLowerCase().includes(arrivalDateFilter.toLowerCase());
       const genderMatch = genderFilter === 'All' || animal.gender === genderFilter;
-      return nameMatch && breedMatch && ageMatch && weightMatch && locationMatch && arrivalDateMatch && genderMatch;
+      const adoptionFeeMatch = animal.adoptionFee.toLowerCase().includes(adoptionFeeFilter.toLowerCase());
+      return nameMatch && breedMatch && ageMatch && weightMatch && locationMatch && arrivalDateMatch && genderMatch && adoptionFeeMatch;
     });
-  }, [animalData, nameFilter, breedFilter, ageFilter, weightFilter, locationFilter, arrivalDateFilter, genderFilter]);
+  }, [animalData, nameFilter, breedFilter, ageFilter, weightFilter, locationFilter, arrivalDateFilter, genderFilter, adoptionFeeFilter]);
 
   const sortedAnimalData = useMemo(() => {
     if (!filteredAnimalData) return null;
@@ -155,6 +157,13 @@ export default function Home() {
                   variant="outlined"
                   value={arrivalDateFilter}
                   onChange={(e) => setArrivalDateFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Filter by Adoption Fee"
+                  variant="outlined"
+                  value={adoptionFeeFilter}
+                  onChange={(e) => setAdoptionFeeFilter(e.target.value)}
                   sx={{ flex: 1 }}
                 />
                 <FormControl sx={{ flex: 1 }}>

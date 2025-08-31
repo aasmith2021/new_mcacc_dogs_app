@@ -27,6 +27,9 @@ export default function Home() {
   const [sortBy, setSortBy] = useState<keyof Animal>('name');
   const [nameFilter, setNameFilter] = useState('');
   const [breedFilter, setBreedFilter] = useState('');
+  const [ageFilter, setAgeFilter] = useState('');
+  const [weightFilter, setWeightFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
 
   const filteredAnimalData = useMemo(() => {
     if (!animalData) return null;
@@ -34,9 +37,12 @@ export default function Home() {
     return animalData.filter(animal => {
       const nameMatch = animal.name.toLowerCase().includes(nameFilter.toLowerCase());
       const breedMatch = animal.breed.toLowerCase().includes(breedFilter.toLowerCase());
-      return nameMatch && breedMatch;
+      const ageMatch = animal.age.toLowerCase().includes(ageFilter.toLowerCase());
+      const weightMatch = animal.weight.toLowerCase().includes(weightFilter.toLowerCase());
+      const locationMatch = animal.location.toLowerCase().includes(locationFilter.toLowerCase());
+      return nameMatch && breedMatch && ageMatch && weightMatch && locationMatch;
     });
-  }, [animalData, nameFilter, breedFilter]);
+  }, [animalData, nameFilter, breedFilter, ageFilter, weightFilter, locationFilter]);
 
   const sortedAnimalData = useMemo(() => {
     if (!filteredAnimalData) return null;
@@ -93,7 +99,12 @@ export default function Home() {
             </Box>
           ) : sortedAnimalData ? (
             <>
-              <Box sx={{ marginBottom: 4, display: 'flex', gap: 2 }}>
+              <Box sx={{
+                marginBottom: 4,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: 2
+              }}>
                 <TextField
                   label="Filter by Name"
                   variant="outlined"
@@ -106,6 +117,27 @@ export default function Home() {
                   variant="outlined"
                   value={breedFilter}
                   onChange={(e) => setBreedFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Filter by Age"
+                  variant="outlined"
+                  value={ageFilter}
+                  onChange={(e) => setAgeFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Filter by Weight"
+                  variant="outlined"
+                  value={weightFilter}
+                  onChange={(e) => setWeightFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Filter by Location"
+                  variant="outlined"
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
                   sx={{ flex: 1 }}
                 />
                 <FormControl sx={{ flex: 1 }}>

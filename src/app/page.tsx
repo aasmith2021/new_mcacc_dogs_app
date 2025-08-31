@@ -1,12 +1,42 @@
 'use client';
 
-import { Container, Typography, Box, AppBar, Toolbar, Card, CardContent, CircularProgress, CardMedia } from '@mui/material';
-import { useEffect, useState } from 'react';
+import {
+  Container,
+  Typography,
+  Box,
+  AppBar,
+  Toolbar,
+  Card,
+  CardContent,
+  CircularProgress,
+  CardMedia,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from '@mui/material';
+import { useEffect, useState, useMemo } from 'react';
 import { type Animal } from '../types';
+
+const SORTABLE_FIELDS: (keyof Animal)[] = ['name', 'breed', 'age', 'gender', 'weight', 'arrivalDate', 'location', 'level', 'adoptionFee'];
 
 export default function Home() {
   const [animalData, setAnimalData] = useState<Animal[] | null>(null);
   const [loadingAnimals, setLoadingAnimals] = useState(true);
+  const [sortBy, setSortBy] = useState<keyof Animal>('name');
+
+  const sortedAnimalData = useMemo(() => {
+    if (!animalData) return null;
+
+    return [...animalData].sort((a, b) => {
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+
+      if (aValue < bValue) return -1;
+      if (aValue > bValue) return 1;
+      return 0;
+    });
+  }, [animalData, sortBy]);
 
   useEffect(() => {
     const fetchAnimals = async () => {
@@ -48,10 +78,26 @@ export default function Home() {
                 Loading Animals...
               </Typography>
             </Box>
-          ) : animalData ? (
+          ) : sortedAnimalData ? (
             <>
+              <Box sx={{ marginBottom: 4 }}>
+                <FormControl fullWidth>
+                  <InputLabel id="sort-by-label">Sort By</InputLabel>
+                  <Select
+                    labelId="sort-by-label"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as keyof Animal)}
+                  >
+                    {SORTABLE_FIELDS.map((field) => (
+                      <MenuItem key={field} value={field}>
+                        {field.charAt(0).toUpperCase() + field.slice(1)}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
               <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-                {animalData.map((animal) => (
+                {sortedAnimalData.map((animal) => (
                   <Card key={animal.id}>
                     <CardMedia
                       sx={{ height: 300 }}

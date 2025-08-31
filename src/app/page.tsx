@@ -1,6 +1,20 @@
 'use client';
 
-import { Container, Typography, Box, AppBar, Toolbar, Card, CardContent, CircularProgress, CardMedia, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import {
+  Container,
+  Typography,
+  Box,
+  AppBar,
+  Toolbar,
+  Card,
+  CardContent,
+  CircularProgress,
+  CardMedia,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from '@mui/material';
 import { useEffect, useState, useMemo } from 'react';
 import { type Animal } from '../types';
 

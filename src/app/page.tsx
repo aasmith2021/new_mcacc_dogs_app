@@ -30,6 +30,14 @@ export default function Home() {
   const [ageFilter, setAgeFilter] = useState('');
   const [weightFilter, setWeightFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
+  const [arrivalDateFilter, setArrivalDateFilter] = useState('');
+  const [genderFilter, setGenderFilter] = useState('All');
+
+  const genderOptions = useMemo(() => {
+    if (!animalData) return ['All'];
+    const genders = animalData.map(animal => animal.gender);
+    return ['All', ...Array.from(new Set(genders))];
+  }, [animalData]);
 
   const filteredAnimalData = useMemo(() => {
     if (!animalData) return null;
@@ -40,9 +48,11 @@ export default function Home() {
       const ageMatch = animal.age.toLowerCase().includes(ageFilter.toLowerCase());
       const weightMatch = animal.weight.toLowerCase().includes(weightFilter.toLowerCase());
       const locationMatch = animal.location.toLowerCase().includes(locationFilter.toLowerCase());
-      return nameMatch && breedMatch && ageMatch && weightMatch && locationMatch;
+      const arrivalDateMatch = animal.arrivalDate.toLowerCase().includes(arrivalDateFilter.toLowerCase());
+      const genderMatch = genderFilter === 'All' || animal.gender === genderFilter;
+      return nameMatch && breedMatch && ageMatch && weightMatch && locationMatch && arrivalDateMatch && genderMatch;
     });
-  }, [animalData, nameFilter, breedFilter, ageFilter, weightFilter, locationFilter]);
+  }, [animalData, nameFilter, breedFilter, ageFilter, weightFilter, locationFilter, arrivalDateFilter, genderFilter]);
 
   const sortedAnimalData = useMemo(() => {
     if (!filteredAnimalData) return null;
@@ -140,6 +150,27 @@ export default function Home() {
                   onChange={(e) => setLocationFilter(e.target.value)}
                   sx={{ flex: 1 }}
                 />
+                <TextField
+                  label="Filter by Arrival Date"
+                  variant="outlined"
+                  value={arrivalDateFilter}
+                  onChange={(e) => setArrivalDateFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <FormControl sx={{ flex: 1 }}>
+                  <InputLabel id="gender-filter-label">Filter by Gender</InputLabel>
+                  <Select
+                    labelId="gender-filter-label"
+                    value={genderFilter}
+                    onChange={(e) => setGenderFilter(e.target.value)}
+                  >
+                    {genderOptions.map((gender) => (
+                      <MenuItem key={gender} value={gender}>
+                        {gender}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <FormControl sx={{ flex: 1 }}>
                   <InputLabel id="sort-by-label">Sort By</InputLabel>
                   <Select

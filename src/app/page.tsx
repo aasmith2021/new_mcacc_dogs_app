@@ -14,6 +14,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  TextField,
 } from '@mui/material';
 import { useEffect, useState, useMemo } from 'react';
 import { type Animal } from '../types';
@@ -24,11 +25,23 @@ export default function Home() {
   const [animalData, setAnimalData] = useState<Animal[] | null>(null);
   const [loadingAnimals, setLoadingAnimals] = useState(true);
   const [sortBy, setSortBy] = useState<keyof Animal>('name');
+  const [nameFilter, setNameFilter] = useState('');
+  const [breedFilter, setBreedFilter] = useState('');
 
-  const sortedAnimalData = useMemo(() => {
+  const filteredAnimalData = useMemo(() => {
     if (!animalData) return null;
 
-    return [...animalData].sort((a, b) => {
+    return animalData.filter(animal => {
+      const nameMatch = animal.name.toLowerCase().includes(nameFilter.toLowerCase());
+      const breedMatch = animal.breed.toLowerCase().includes(breedFilter.toLowerCase());
+      return nameMatch && breedMatch;
+    });
+  }, [animalData, nameFilter, breedFilter]);
+
+  const sortedAnimalData = useMemo(() => {
+    if (!filteredAnimalData) return null;
+
+    return [...filteredAnimalData].sort((a, b) => {
       const aValue = a[sortBy];
       const bValue = b[sortBy];
 
@@ -36,7 +49,7 @@ export default function Home() {
       if (aValue > bValue) return 1;
       return 0;
     });
-  }, [animalData, sortBy]);
+  }, [filteredAnimalData, sortBy]);
 
   useEffect(() => {
     const fetchAnimals = async () => {
@@ -80,8 +93,22 @@ export default function Home() {
             </Box>
           ) : sortedAnimalData ? (
             <>
-              <Box sx={{ marginBottom: 4 }}>
-                <FormControl fullWidth>
+              <Box sx={{ marginBottom: 4, display: 'flex', gap: 2 }}>
+                <TextField
+                  label="Filter by Name"
+                  variant="outlined"
+                  value={nameFilter}
+                  onChange={(e) => setNameFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Filter by Breed"
+                  variant="outlined"
+                  value={breedFilter}
+                  onChange={(e) => setBreedFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <FormControl sx={{ flex: 1 }}>
                   <InputLabel id="sort-by-label">Sort By</InputLabel>
                   <Select
                     labelId="sort-by-label"

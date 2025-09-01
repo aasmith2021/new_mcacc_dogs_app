@@ -24,6 +24,13 @@ import { type Animal } from '../types';
 
 const SORTABLE_FIELDS: (keyof Animal)[] = ['name', 'breed', 'age', 'gender', 'weight', 'arrivalDate', 'location', 'level', 'adoptionFee'];
 
+const getAdoptionFeeValue = (fee: string): number => {
+  if (!fee) return 0;
+  const cleanedFee = fee.replace('$', '');
+  const numericValue = parseFloat(cleanedFee);
+  return isNaN(numericValue) ? 0 : numericValue;
+};
+
 export default function Home() {
   const [animalData, setAnimalData] = useState<Animal[] | null>(null);
   const [loadingAnimals, setLoadingAnimals] = useState(true);
@@ -66,7 +73,16 @@ export default function Home() {
       }
 
       const genderMatch = genderFilter === 'All' || animal.gender === genderFilter;
-      const adoptionFeeMatch = animal.adoptionFee.toLowerCase().includes(adoptionFeeFilter.toLowerCase());
+
+      let adoptionFeeMatch = true;
+      if (adoptionFeeFilter) {
+        const filterValue = parseFloat(adoptionFeeFilter);
+        if (!isNaN(filterValue)) {
+          const animalFee = getAdoptionFeeValue(animal.adoptionFee);
+          adoptionFeeMatch = animalFee <= filterValue;
+        }
+      }
+
       return nameMatch && breedMatch && ageMatch && weightMatch && locationMatch && arrivalDateMatch && genderMatch && adoptionFeeMatch;
     });
   }, [animalData, nameFilter, breedFilter, ageFilter, weightFilter, locationFilter, arrivalDateFilter, genderFilter, adoptionFeeFilter]);
@@ -168,13 +184,13 @@ export default function Home() {
                   sx={{ flex: 1 }}
                 />
                 <DatePicker
-                  label="Filter by Arrival Date"
+                  label="Filter by Min. Arrival Date"
                   value={arrivalDateFilter}
                   onChange={(newValue) => setArrivalDateFilter(newValue)}
                   sx={{ flex: 1 }}
                 />
                 <TextField
-                  label="Filter by Adoption Fee"
+                  label="Filter by Max. Adoption Fee"
                   variant="outlined"
                   value={adoptionFeeFilter}
                   onChange={(e) => setAdoptionFeeFilter(e.target.value)}

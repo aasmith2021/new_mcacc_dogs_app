@@ -15,7 +15,10 @@ import {
   FormControl,
   InputLabel,
   TextField,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -23,6 +26,13 @@ import { useEffect, useState, useMemo } from 'react';
 import { type Animal } from '../types';
 
 const SORTABLE_FIELDS: (keyof Animal)[] = ['name', 'breed', 'age', 'gender', 'weight', 'arrivalDate', 'location', 'level', 'adoptionFee'];
+
+const getAdoptionFeeValue = (fee: string): number => {
+  if (!fee) return 0;
+  const cleanedFee = fee.replace('$', '');
+  const numericValue = parseFloat(cleanedFee);
+  return isNaN(numericValue) ? 0 : numericValue;
+};
 
 export default function Home() {
   const [animalData, setAnimalData] = useState<Animal[] | null>(null);
@@ -66,7 +76,16 @@ export default function Home() {
       }
 
       const genderMatch = genderFilter === 'All' || animal.gender === genderFilter;
-      const adoptionFeeMatch = animal.adoptionFee.toLowerCase().includes(adoptionFeeFilter.toLowerCase());
+
+      let adoptionFeeMatch = true;
+      if (adoptionFeeFilter) {
+        const filterValue = parseFloat(adoptionFeeFilter);
+        if (!isNaN(filterValue)) {
+          const animalFee = getAdoptionFeeValue(animal.adoptionFee);
+          adoptionFeeMatch = animalFee <= filterValue;
+        }
+      }
+
       return nameMatch && breedMatch && ageMatch && weightMatch && locationMatch && arrivalDateMatch && genderMatch && adoptionFeeMatch;
     });
   }, [animalData, nameFilter, breedFilter, ageFilter, weightFilter, locationFilter, arrivalDateFilter, genderFilter, adoptionFeeFilter]);
@@ -138,6 +157,15 @@ export default function Home() {
                   value={nameFilter}
                   onChange={(e) => setNameFilter(e.target.value)}
                   sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: nameFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setNameFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <TextField
                   label="Filter by Breed"
@@ -145,6 +173,15 @@ export default function Home() {
                   value={breedFilter}
                   onChange={(e) => setBreedFilter(e.target.value)}
                   sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: breedFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setBreedFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <TextField
                   label="Filter by Age"
@@ -152,6 +189,15 @@ export default function Home() {
                   value={ageFilter}
                   onChange={(e) => setAgeFilter(e.target.value)}
                   sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: ageFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setAgeFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <TextField
                   label="Filter by Weight"
@@ -159,6 +205,15 @@ export default function Home() {
                   value={weightFilter}
                   onChange={(e) => setWeightFilter(e.target.value)}
                   sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: weightFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setWeightFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <TextField
                   label="Filter by Location"
@@ -166,19 +221,50 @@ export default function Home() {
                   value={locationFilter}
                   onChange={(e) => setLocationFilter(e.target.value)}
                   sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: locationFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setLocationFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <DatePicker
-                  label="Filter by Arrival Date"
+                  label="Filter by Min. Arrival Date"
                   value={arrivalDateFilter}
                   onChange={(newValue) => setArrivalDateFilter(newValue)}
                   sx={{ flex: 1 }}
+                  slotProps={{
+                    textField: {
+                      InputProps: {
+                        endAdornment: arrivalDateFilter && (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setArrivalDateFilter(null)} edge="end">
+                              <ClearIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
+                    },
+                  }}
                 />
                 <TextField
-                  label="Filter by Adoption Fee"
+                  label="Filter by Max. Adoption Fee"
                   variant="outlined"
                   value={adoptionFeeFilter}
                   onChange={(e) => setAdoptionFeeFilter(e.target.value)}
                   sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: adoptionFeeFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setAdoptionFeeFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <FormControl sx={{ flex: 1 }}>
                   <InputLabel id="gender-filter-label">Filter by Gender</InputLabel>

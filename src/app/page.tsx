@@ -15,7 +15,10 @@ import {
   FormControl,
   InputLabel,
   TextField,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -154,6 +157,15 @@ export default function Home() {
                   value={nameFilter}
                   onChange={(e) => setNameFilter(e.target.value)}
                   sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: nameFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setNameFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <TextField
                   label="Filter by Breed"
@@ -161,6 +173,15 @@ export default function Home() {
                   value={breedFilter}
                   onChange={(e) => setBreedFilter(e.target.value)}
                   sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: breedFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setBreedFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <TextField
                   label="Filter by Age"
@@ -168,6 +189,15 @@ export default function Home() {
                   value={ageFilter}
                   onChange={(e) => setAgeFilter(e.target.value)}
                   sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: ageFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setAgeFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <TextField
                   label="Filter by Weight"
@@ -175,6 +205,15 @@ export default function Home() {
                   value={weightFilter}
                   onChange={(e) => setWeightFilter(e.target.value)}
                   sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: weightFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setWeightFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <TextField
                   label="Filter by Location"
@@ -182,12 +221,34 @@ export default function Home() {
                   value={locationFilter}
                   onChange={(e) => setLocationFilter(e.target.value)}
                   sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: locationFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setLocationFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <DatePicker
                   label="Filter by Min. Arrival Date"
                   value={arrivalDateFilter}
                   onChange={(newValue) => setArrivalDateFilter(newValue)}
                   sx={{ flex: 1 }}
+                  slotProps={{
+                    textField: {
+                      InputProps: {
+                        endAdornment: arrivalDateFilter && (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setArrivalDateFilter(null)} edge="end">
+                              <ClearIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
+                    },
+                  }}
                 />
                 <TextField
                   label="Filter by Max. Adoption Fee"
@@ -195,6 +256,15 @@ export default function Home() {
                   value={adoptionFeeFilter}
                   onChange={(e) => setAdoptionFeeFilter(e.target.value)}
                   sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: adoptionFeeFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setAdoptionFeeFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <FormControl sx={{ flex: 1 }}>
                   <InputLabel id="gender-filter-label">Filter by Gender</InputLabel>

@@ -8,8 +8,8 @@ import {
   Toolbar,
   Card,
   CardContent,
-  CircularProgress,
   CardMedia,
+  LinearProgress,
   Select,
   MenuItem,
   FormControl,
@@ -34,6 +34,25 @@ const getAdoptionFeeValue = (fee: string): number => {
   return isNaN(numericValue) ? 0 : numericValue;
 };
 
+const getAgeValue = (age: string): number => {
+  if (!age) return 0;
+
+  const parseYears = (input: string): number => {
+    const match = input.match(/\b(\d+)\s+year(s)?\b/i);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+
+  const parseMonths = (input: string): number => {
+    const match = input.match(/\b(\d+)\s+month(s)?\b/i);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+
+  const years = parseYears(age);
+  const months = parseMonths(age);
+
+  return years + (months / 12);
+};
+
 export default function Home() {
   const [animalData, setAnimalData] = useState<Animal[] | null>(null);
   const [loadingAnimals, setLoadingAnimals] = useState(true);
@@ -53,15 +72,34 @@ export default function Home() {
     return ['All', ...Array.from(new Set(genders))];
   }, [animalData]);
 
+  const locationOptions = ['All', 'East Kennel', 'West Kennel', 'PetSmart Old Town Scottsdale', 'Foster'];
+
   const filteredAnimalData = useMemo(() => {
     if (!animalData) return null;
 
     return animalData.filter(animal => {
       const nameMatch = animal.name.toLowerCase().includes(nameFilter.toLowerCase());
       const breedMatch = animal.breed.toLowerCase().includes(breedFilter.toLowerCase());
-      const ageMatch = animal.age.toLowerCase().includes(ageFilter.toLowerCase());
-      const weightMatch = animal.weight.toLowerCase().includes(weightFilter.toLowerCase());
-      const locationMatch = animal.location.toLowerCase().includes(locationFilter.toLowerCase());
+
+      let ageMatch = true;
+      if (ageFilter) {
+        const filterValue = parseFloat(ageFilter);
+        if (!isNaN(filterValue)) {
+          const animalAge = getAgeValue(animal.age);
+          console.log(animalAge);
+          ageMatch = animalAge <= filterValue;
+        }
+      }
+
+      let weightMatch = true;
+      if (weightFilter) {
+        const filterValue = parseFloat(weightFilter);
+        if (!isNaN(filterValue)) {
+          weightMatch = parseFloat(animal.weight) <= filterValue;
+        }
+      }
+
+      const locationMatch = locationFilter === 'All' || animal.location.toLowerCase().includes(locationFilter.toLowerCase());
 
       let arrivalDateMatch = true;
       if (arrivalDateFilter) {
@@ -81,8 +119,8 @@ export default function Home() {
       if (adoptionFeeFilter) {
         const filterValue = parseFloat(adoptionFeeFilter);
         if (!isNaN(filterValue)) {
-          const animalFee = getAdoptionFeeValue(animal.adoptionFee);
-          adoptionFeeMatch = animalFee <= filterValue;
+          const animalAdoptionFee = getAdoptionFeeValue(animal.adoptionFee);
+          adoptionFeeMatch = animalAdoptionFee <= filterValue;
         }
       }
 
@@ -108,7 +146,6 @@ export default function Home() {
       try {
         const animalIdsResponse = await fetch('/api/scrape/animalIds');
         const { animalIds } = await animalIdsResponse.json();
-
         console.log(animalIds.length);
 
         const animalDataRequest = new Request('/api/scrape/animalData', { method: 'POST', body: JSON.stringify(animalIds) } );
@@ -130,18 +167,18 @@ export default function Home() {
       <AppBar position="static" sx={{ backgroundColor: 'primary.main', color: 'white' }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
-            New Dogs at MCACC
+            Dogs at MCACC
           </Typography>
         </Toolbar>
       </AppBar>
       <Container maxWidth="lg">
         <Box sx={{ my: 4 }}>
           {loadingAnimals ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
-              <CircularProgress />
-              <Typography variant="h6" component="div">
-                Loading Animals...
+            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '20px' }}>
+              <Typography variant="h6" component="div" align="center">
+                Loading Animals
               </Typography>
+              <LinearProgress variant="indeterminate" />
             </Box>
           ) : sortedAnimalData ? (
             <>
@@ -184,7 +221,7 @@ export default function Home() {
                   }}
                 />
                 <TextField
-                  label="Filter by Age"
+                  label="Filter by Max. Age"
                   variant="outlined"
                   value={ageFilter}
                   onChange={(e) => setAgeFilter(e.target.value)}
@@ -200,7 +237,7 @@ export default function Home() {
                   }}
                 />
                 <TextField
-                  label="Filter by Weight"
+                  label="Filter by Max. Weight"
                   variant="outlined"
                   value={weightFilter}
                   onChange={(e) => setWeightFilter(e.target.value)}
@@ -215,22 +252,20 @@ export default function Home() {
                     ),
                   }}
                 />
-                <TextField
-                  label="Filter by Location"
-                  variant="outlined"
-                  value={locationFilter}
-                  onChange={(e) => setLocationFilter(e.target.value)}
-                  sx={{ flex: 1 }}
-                  InputProps={{
-                    endAdornment: locationFilter && (
-                      <InputAdornment position="end">
-                        <IconButton onClick={() => setLocationFilter('')} edge="end">
-                          <ClearIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+                <FormControl sx={{ flex: 1 }}>
+                  <InputLabel id="location-filter-label">Filter by Location</InputLabel>
+                  <Select
+                    labelId="location-filter-label"
+                    value={locationFilter}
+                    onChange={(e) => setLocationFilter(e.target.value)}
+                  >
+                    {locationOptions.map((location) => (
+                      <MenuItem key={location} value={location}>
+                        {location}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <DatePicker
                   label="Filter by Min. Arrival Date"
                   value={arrivalDateFilter}

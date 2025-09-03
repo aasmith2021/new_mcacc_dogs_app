@@ -17,6 +17,7 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  useTheme,
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -24,6 +25,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useEffect, useState, useMemo } from 'react';
 import { type Animal } from '../types';
+import { ANIMAL_DATA_PAGE_BASE_URL } from '../services/utils';
 
 const SORTABLE_FIELDS: (keyof Animal)[] = ['name', 'breed', 'age', 'gender', 'weight', 'arrivalDate', 'location', 'level', 'adoptionFee'];
 
@@ -65,6 +67,8 @@ export default function Home() {
   const [arrivalDateFilter, setArrivalDateFilter] = useState<Date | null>(null);
   const [genderFilter, setGenderFilter] = useState('All');
   const [adoptionFeeFilter, setAdoptionFeeFilter] = useState('');
+
+  const theme = useTheme();
 
   const genderOptions = useMemo(() => {
     if (!animalData) return ['All'];
@@ -332,7 +336,18 @@ export default function Home() {
               </Box>
               <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
                 {sortedAnimalData.map((animal) => (
-                  <Card key={animal.id}>
+                  <Card
+                    key={animal.id}
+                    sx={{
+                      transition: 'box-shadow 0.2s ease-in-out',
+                      '&:hover': {
+                        color: theme.palette.secondary.main,
+                        boxShadow: `0px 4px 30px ${theme.palette.secondary.main}`,
+                        cursor: 'pointer',
+                      },
+                    }}
+                    onClick={() => { window.open(`${ANIMAL_DATA_PAGE_BASE_URL}${animal.id}`, '_blank')}}
+                  >
                     <CardMedia
                       sx={{ height: 300 }}
                       image={animal.image}

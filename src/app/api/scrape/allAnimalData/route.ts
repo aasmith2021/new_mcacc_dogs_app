@@ -8,6 +8,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ animals });
   } catch (_error) {
-    return new Response('Error scraping animal data', { status: 500 });
+    return new Response('Error scraping all animal data', { status: 500 });
   }
 }

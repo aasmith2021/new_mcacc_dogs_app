@@ -25,9 +25,9 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useEffect, useState, useMemo } from 'react';
 import { type Animal } from '../types';
-import { ANIMAL_DATA_PAGE_BASE_URL } from '../services/utils';
+import { ANIMAL_DATA_PAGE_BASE_URL, ANIMALS_PER_PAGE } from '../services/utils';
 
-const SORTABLE_FIELDS: (keyof Animal)[] = ['name', 'breed', 'age', 'gender', 'weight', 'arrivalDate', 'location', 'level', 'adoptionFee'];
+const SORTABLE_FIELDS: (keyof Animal)[] = ['id', 'name', 'breed', 'age', 'gender', 'weight', 'arrivalDate', 'location', 'level', 'adoptionFee'];
 
 const getAdoptionFeeValue = (fee: string): number => {
   if (!fee) return 0;
@@ -56,9 +56,13 @@ const getAgeValue = (age: string): number => {
 };
 
 export default function Home() {
+  const [totalNumberOfAnimalsToLoad, setTotalNumberOfAnimalsToLoad] = useState<number>(0);
+  const [numberOfAnimalIdsLoaded, setNumberOfAnimalIdsLoaded] = useState<number>(0);
+  const [numberOfAnimalsLoaded, setNumberOfAnimalsLoaded] = useState<number>(0);
   const [animalData, setAnimalData] = useState<Animal[] | null>(null);
-  const [loadingAnimals, setLoadingAnimals] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState<keyof Animal>('name');
+  const [idFilter, setIdFilter] = useState('');
   const [nameFilter, setNameFilter] = useState('');
   const [breedFilter, setBreedFilter] = useState('');
   const [ageFilter, setAgeFilter] = useState('');
@@ -69,6 +73,16 @@ export default function Home() {
   const [adoptionFeeFilter, setAdoptionFeeFilter] = useState('');
 
   const theme = useTheme();
+
+  const percentOfAnimalIdsLoaded = useMemo(() => {
+    const percentage = Math.round(numberOfAnimalIdsLoaded / totalNumberOfAnimalsToLoad * 100);
+    return Number.isNaN(percentage) ? 0 : percentage;
+  }, [numberOfAnimalIdsLoaded, totalNumberOfAnimalsToLoad]);
+
+  const percentOfAnimalDataLoaded = useMemo(() => {
+    const percentage = Math.round(numberOfAnimalsLoaded   / totalNumberOfAnimalsToLoad * 100);
+    return Number.isNaN(percentage) ? 0 : percentage;
+  }, [numberOfAnimalsLoaded, totalNumberOfAnimalsToLoad]);
 
   const genderOptions = useMemo(() => {
     if (!animalData) return ['All'];
@@ -82,6 +96,7 @@ export default function Home() {
     if (!animalData) return null;
 
     return animalData.filter(animal => {
+      const idMatch = animal.id.toLowerCase().includes(idFilter.toLowerCase());
       const nameMatch = animal.name.toLowerCase().includes(nameFilter.toLowerCase());
       const breedMatch = animal.breed.toLowerCase().includes(breedFilter.toLowerCase());
 
@@ -128,9 +143,10 @@ export default function Home() {
         }
       }
 
-      return nameMatch && breedMatch && ageMatch && weightMatch && locationMatch && arrivalDateMatch && genderMatch && adoptionFeeMatch;
+      return idMatch && nameMatch && breedMatch && ageMatch && weightMatch && locationMatch && arrivalDateMatch && genderMatch && adoptionFeeMatch;
     });
-  }, [animalData, nameFilter, breedFilter, ageFilter, weightFilter, locationFilter, arrivalDateFilter, genderFilter, adoptionFeeFilter]);
+  }, [animalData, idFilter, nameFilter, breedFilter, ageFilter, weightFilter, locationFilter, arrivalDateFilter, genderFilter, adoptionFeeFilter]);
+
 
   const sortedAnimalData = useMemo(() => {
     if (!filteredAnimalData) return null;
@@ -145,26 +161,81 @@ export default function Home() {
     });
   }, [filteredAnimalData, sortBy]);
 
+  const fetchNumberOfAnimals = async () => (await (await fetch('/api/scrape/numberOfAnimals')).json()).numberOfAnimals;
+  const fetchSingleAnimalIdBatch = async (pageNumber: number) => {
+    const animalIdBatch = (await (await fetch(new Request('/api/scrape/animalIdBatch', { method: 'POST', body: JSON.stringify(pageNumber) }))).json()).animalIds;
+    setNumberOfAnimalIdsLoaded((currentNumber) => currentNumber + animalIdBatch.length);
+    return animalIdBatch;
+  }
+  const fetchSingleAnimalData = async (animalId: string) => {
+    const singleAnimalData = (await (await fetch(new Request('/api/scrape/singleAnimalData', { method: 'POST', body: JSON.stringify(animalId) }))).json()).singleAnimalData;
+    setNumberOfAnimalsLoaded((currentNumber) => currentNumber + 1);
+    return singleAnimalData;
+  };
+
   useEffect(() => {
     const fetchAnimals = async () => {
       try {
-        const animalIdsResponse = await fetch('/api/scrape/animalIds');
-        const { animalIds } = await animalIdsResponse.json();
-        console.log(animalIds.length);
+        const numberOfAnimals = await fetchNumberOfAnimals();
+        setTotalNumberOfAnimalsToLoad(numberOfAnimals);
 
-        const animalDataRequest = new Request('/api/scrape/animalData', { method: 'POST', body: JSON.stringify(animalIds) } );
-        const animalDataResponse = await fetch(animalDataRequest);
-        const { animals } = await animalDataResponse.json();
-        setAnimalData(animals);
+        const numberOfPages = Math.ceil(numberOfAnimals / ANIMALS_PER_PAGE);
+        const pages = Array(numberOfPages).fill('').map((_, index) => index);
+        const animalIds = (await Promise.all(pages.map(fetchSingleAnimalIdBatch))).flat();
+        
+        const allAnimalData = (await Promise.allSettled(animalIds.map(fetchSingleAnimalData))).map((settledResult) => {
+          if (settledResult.status === 'fulfilled') {
+            return settledResult.value;
+          }
+          return null;
+        }).filter((animalData) => animalData);
+        setAnimalData(allAnimalData);
       } catch (error) {
         console.error('Error fetching animal data:', error);
       } finally {
-        setLoadingAnimals(false);
+        setIsLoading(false);
       }
     };
 
     fetchAnimals();
   }, []);
+
+  const getLoadingProgress = () => (
+    <>
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '20px', marginBottom: '25px' }}>
+        <Typography variant="h6" component="div" align="center">
+          Loading Animal Ids
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ width: '100%', mr: 1 }}>
+            <LinearProgress variant="determinate" value={percentOfAnimalIdsLoaded} />
+          </Box>
+          <Box sx={{ minWidth: 35 }}>
+            <Typography
+              variant="body2"
+              sx={{ color: 'text.secondary' }}
+              >{`${percentOfAnimalIdsLoaded}%`}</Typography>
+          </Box>
+        </Box>
+      </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '20px' }}>
+        <Typography variant="h6" component="div" align="center">
+          Loading Animal Data
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ width: '100%', mr: 1 }}>
+            <LinearProgress variant="determinate" value={percentOfAnimalDataLoaded} color="secondary" />
+          </Box>
+          <Box sx={{ minWidth: 35 }}>
+            <Typography
+              variant="body2"
+              sx={{ color: 'text.secondary' }}
+              >{`${percentOfAnimalDataLoaded}%`}</Typography>
+          </Box>
+        </Box>
+      </Box>
+    </>
+  );
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -177,14 +248,7 @@ export default function Home() {
       </AppBar>
       <Container maxWidth="lg">
         <Box sx={{ my: 4 }}>
-          {loadingAnimals ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '20px' }}>
-              <Typography variant="h6" component="div" align="center">
-                Loading Animals
-              </Typography>
-              <LinearProgress variant="indeterminate" />
-            </Box>
-          ) : sortedAnimalData ? (
+          {isLoading ? getLoadingProgress() : sortedAnimalData ? (
             <>
               <Box sx={{
                 marginBottom: 4,
@@ -192,6 +256,22 @@ export default function Home() {
                 gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
                 gap: 2
               }}>
+                <TextField
+                  label="Filter by Id"
+                  variant="outlined"
+                  value={idFilter}
+                  onChange={(e) => setIdFilter(e.target.value)}
+                  sx={{ flex: 1 }}
+                  InputProps={{
+                    endAdornment: idFilter && (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setIdFilter('')} edge="end">
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
                 <TextField
                   label="Filter by Name"
                   variant="outlined"

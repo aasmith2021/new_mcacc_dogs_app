@@ -5,7 +5,6 @@ import { Animal } from '../types';
 import { ANIMAL_DATA_PAGE_BASE_URL, CHUNK_SIZE, GET_OPTIONS } from './utils';
 
 export const scrapeSingleAnimalData = async (id: string): Promise<Animal> => {
-  console.log(`Fetching Animal Data for ID #${id}`);
   const url = `${ANIMAL_DATA_PAGE_BASE_URL}${id}`;
   const response = await axios.get(url, GET_OPTIONS);
   const html = response.data;

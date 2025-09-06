@@ -1,9 +1,8 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { ANIMAL_IDS_BASE_URL, GET_OPTIONS } from './utils';
+import { ANIMAL_IDS_BASE_URL, ANIMALS_PER_PAGE, GET_OPTIONS } from './utils';
 
-export const fetchAnimalIdBatch = async (pageNumber: number) => {
-  console.log(`Fetching Animal IDs Page #${pageNumber + 1}`);
+export const scrapeAnimalIdBatch = async (pageNumber: number) => {
   const animalIdsBatch: string[] = [];
   const url = `${ANIMAL_IDS_BASE_URL}${pageNumber}`;
   const response = await axios.get(url, GET_OPTIONS);
@@ -18,13 +17,15 @@ export const fetchAnimalIdBatch = async (pageNumber: number) => {
   return animalIdsBatch;
 };
 
-export const scrapeAnimalIds = async () => {
+export const scrapeAllAnimalIds = async (numberOfAnimals: number) => {
+  const numberOfPages = Math.ceil(numberOfAnimals / ANIMALS_PER_PAGE);
+  
   const animalIds: string[] = [];
-  const pageNumbers = Array(40).fill('').map((_, index) => index);
+  const pageNumbers = Array(numberOfPages).fill('').map((_, index) => index);
 
   try {
     const batchIdFetchResults = await Promise.allSettled(
-      pageNumbers.map((pageNumber) => fetchAnimalIdBatch(pageNumber))
+      pageNumbers.map((pageNumber) => scrapeAnimalIdBatch(pageNumber))
     );
 
     batchIdFetchResults.forEach((batchIdFetchResult) => {

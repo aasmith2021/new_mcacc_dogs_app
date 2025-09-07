@@ -166,7 +166,7 @@ export default function Home() {
     const animalIdBatch = (await (await fetch(new Request('/api/scrape/animalIdBatch', { method: 'POST', body: JSON.stringify(pageNumber) }))).json()).animalIds;
     setNumberOfAnimalIdsLoaded((currentNumber) => currentNumber + animalIdBatch.length);
     return animalIdBatch;
-  }
+  };
   const fetchSingleAnimalData = async (animalId: string) => {
     const singleAnimalData = (await (await fetch(new Request('/api/scrape/singleAnimalData', { method: 'POST', body: JSON.stringify(animalId) }))).json()).singleAnimalData;
     setNumberOfAnimalsLoaded((currentNumber) => currentNumber + 1);

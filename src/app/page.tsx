@@ -167,28 +167,39 @@ export default function Home() {
     setNumberOfAnimalIdsLoaded((currentNumber) => currentNumber + animalIdBatch.length);
     return animalIdBatch;
   };
-  const fetchSingleAnimalData = async (animalId: string) => {
-    const singleAnimalData = (await (await fetch(new Request('/api/scrape/singleAnimalData', { method: 'POST', body: JSON.stringify(animalId) }))).json()).singleAnimalData;
-    setNumberOfAnimalsLoaded((currentNumber) => currentNumber + 1);
-    return singleAnimalData;
+  const fetchAllAnimalData = async (animalIds: string[]) => {
+    console.log('Fetching all animal data for', animalIds.length, 'animals');
+    try {
+      const response = await fetch(new Request('/api/scrape/allAnimalData', { method: 'POST', body: JSON.stringify(animalIds) }));
+      if (!response.ok) {
+        console.error('Error fetching all animal data:', response.statusText);
+        return [];
+      }
+      const data = await response.json();
+      console.log('Fetched all animal data:', data.animals.length, 'animals');
+      setNumberOfAnimalsLoaded(data.animals.length);
+      return data.animals;
+    } catch (error) {
+      console.error('Error in fetchAllAnimalData:', error);
+      return [];
+    }
   };
 
   useEffect(() => {
     const fetchAnimals = async () => {
       try {
+        console.log('Fetching number of animals');
         const numberOfAnimals = await fetchNumberOfAnimals();
+        console.log('Number of animals:', numberOfAnimals);
         setTotalNumberOfAnimalsToLoad(numberOfAnimals);
 
         const numberOfPages = Math.ceil(numberOfAnimals / ANIMALS_PER_PAGE);
         const pages = Array(numberOfPages).fill('').map((_, index) => index);
+        console.log('Fetching animal IDs from', numberOfPages, 'pages');
         const animalIds = (await Promise.all(pages.map(fetchSingleAnimalIdBatch))).flat();
+        console.log('Fetched animal IDs:', animalIds.length);
         
-        const allAnimalData = (await Promise.allSettled(animalIds.map(fetchSingleAnimalData))).map((settledResult) => {
-          if (settledResult.status === 'fulfilled') {
-            return settledResult.value;
-          }
-          return null;
-        }).filter((animalData) => animalData);
+        const allAnimalData = await fetchAllAnimalData(animalIds);
         setAnimalData(allAnimalData);
       } catch (error) {
         console.error('Error fetching animal data:', error);

@@ -4,7 +4,7 @@ module.exports = {
   setupFilesAfterEnv: ['@testing-library/jest-dom', '<rootDir>/jest.setup.js'],
   transform: {
     '^.+\\.(ts|tsx)?$': ['ts-jest', { tsconfig: { jsx: 'react-jsx' } }],
-    '^.+\\.(js|cjs|mjs)?$': ['babel-jest'],
+    '^.+\\.(js|cjs|mjs)?$': ['babel-jest', { configFile: './tests/babel.config.js' }],
   },
   transformIgnorePatterns: [
     'node_modules/(?!(cheerio)/)',

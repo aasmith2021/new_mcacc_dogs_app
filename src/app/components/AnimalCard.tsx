@@ -19,6 +19,7 @@ export const AnimalCard = ({ animal }: AnimalCardProps) => {
 
   return (
     <Card
+      data-testid="animal-card"
       key={animal.id}
       sx={{
         transition: 'box-shadow 0.2s ease-in-out',

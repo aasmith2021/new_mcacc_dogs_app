@@ -13,7 +13,7 @@ interface LoadingIndicatorProps {
 
 export const LoadingIndicator = ({ percentOfAnimalIdsLoaded, percentOfAnimalDataLoaded }: LoadingIndicatorProps) => {
   return (
-    <>
+    <div data-testid="loading-indicator">
       <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '20px', marginBottom: '25px' }}>
         <Typography variant="h6" component="div" align="center">
           Loading Animal Ids
@@ -46,6 +46,6 @@ export const LoadingIndicator = ({ percentOfAnimalIdsLoaded, percentOfAnimalData
           </Box>
         </Box>
       </Box>
-    </>
+    </div>
   );
 };

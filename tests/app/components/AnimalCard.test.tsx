@@ -1,6 +1,4 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { AnimalCard } from '../../../src/app/components/AnimalCard';
 import { Animal } from '../../../src/types';
 import { ThemeProvider, createTheme } from '@mui/material/styles';

@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { scrapeNumberOfAnimals } from '../../src/services/scrapeNumberOfAnimals';
 
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedAxiosGet = jest.spyOn(axios, 'get');
 
 describe('scrapeNumberOfAnimals', () => {
   it('should return the number of animals when a valid HTML is provided', async () => {
@@ -13,7 +12,7 @@ describe('scrapeNumberOfAnimals', () => {
         </body>
       </html>
     `;
-    mockedAxios.get.mockResolvedValue({ data: mockHtml });
+    mockedAxiosGet.mockResolvedValue({ data: mockHtml });
 
     const numberOfAnimals = await scrapeNumberOfAnimals();
     expect(numberOfAnimals).toBe(123);
@@ -27,7 +26,7 @@ describe('scrapeNumberOfAnimals', () => {
         </body>
       </html>
     `;
-    mockedAxios.get.mockResolvedValue({ data: mockHtml });
+    mockedAxiosGet.mockResolvedValue({ data: mockHtml });
 
     const numberOfAnimals = await scrapeNumberOfAnimals();
     expect(numberOfAnimals).toBeNaN();

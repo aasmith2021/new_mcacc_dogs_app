@@ -1,6 +1,4 @@
-import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { FilterControls } from '../../../src/app/components/FilterControls';
 import { Animal } from '../../../src/types';
 import { LocalizationProvider } from '@mui/x-date-pickers';

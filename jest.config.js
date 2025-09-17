@@ -3,15 +3,10 @@ module.exports = {
   testEnvironment: 'jest-environment-jsdom',
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
   transform: {
-    '^.+\\.tsx?$': ['ts-jest', {
-      tsconfig: {
-        jsx: 'react-jsx'
-      }
-    }],
+    '^.+\\.(ts|tsx)?$': ['ts-jest', { tsconfig: { jsx: 'react-jsx' } }],
+    '^.+\\.(js|cjs|mjs)?$': ['babel-jest'],
   },
-  moduleNameMapper: {
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    'cheerio': '<rootDir>/tests/mocks/cheerio.ts',
-    'lodash': '<rootDir>/tests/mocks/lodash.ts',
-  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(cheerio)/)',
+  ],
 };

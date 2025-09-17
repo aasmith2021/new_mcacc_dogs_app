@@ -17,7 +17,6 @@ import { FilterControls } from './components/FilterControls';
 import { LoadingIndicator } from './components/LoadingIndicator';
 
 const SORTABLE_FIELDS: (keyof Animal)[] = ['id', 'name', 'breed', 'age', 'gender', 'weight', 'arrivalDate', 'location', 'level', 'adoptionFee'];
-const NUMERICAL_SORT_FIELDS = ['age', 'weight', 'adoptionFee'];
 
 const getAdoptionFeeValue = (fee: string): number => {
   if (!fee) return 0;

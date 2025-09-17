@@ -2,12 +2,11 @@ import axios from 'axios';
 import { scrapeAnimalIdBatch, scrapeAllAnimalIds } from '../../src/services/scrapeAnimalIds';
 import { ANIMALS_PER_PAGE } from '../../src/services/utils';
 
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedAxiosGet = jest.spyOn(axios, 'get');
 
 describe('scrapeAnimalIds', () => {
   afterEach(() => {
-    mockedAxios.get.mockClear();
+    mockedAxiosGet.mockClear();
   });
 
   describe('scrapeAnimalIdBatch', () => {
@@ -21,7 +20,7 @@ describe('scrapeAnimalIds', () => {
           </body>
         </html>
       `;
-      mockedAxios.get.mockResolvedValue({ data: mockHtml });
+      mockedAxiosGet.mockResolvedValue({ data: mockHtml });
 
       const animalIds = await scrapeAnimalIdBatch(1);
       expect(animalIds).toEqual(['1', '2', '3']);
@@ -47,7 +46,7 @@ describe('scrapeAnimalIds', () => {
         </html>
       `;
 
-      mockedAxios.get
+      mockedAxiosGet
         .mockResolvedValueOnce({ data: mockHtmlPage1 })
         .mockResolvedValueOnce({ data: mockHtmlPage2 });
 
@@ -55,7 +54,7 @@ describe('scrapeAnimalIds', () => {
       const result = await scrapeAllAnimalIds(numberOfAnimals);
 
       // The test will call scrapeAnimalIdBatch for page 0 and 1
-      expect(mockedAxios.get).toHaveBeenCalledTimes(2);
+      expect(mockedAxiosGet).toHaveBeenCalledTimes(2);
       expect(result).toEqual(['1', '2', '3', '4']);
     });
   });

@@ -2,12 +2,11 @@ import axios from 'axios';
 import { scrapeSingleAnimalData, scrapeAllAnimalData } from '../../src/services/scrapeAnimalData';
 import { Animal } from '../../src/types';
 
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedAxiosGet = jest.spyOn(axios, 'get');
 
 describe('scrapeAnimalData', () => {
   afterEach(() => {
-    mockedAxios.get.mockClear();
+    mockedAxiosGet.mockClear();
   });
 
   describe('scrapeSingleAnimalData', () => {
@@ -32,7 +31,7 @@ describe('scrapeAnimalData', () => {
           </body>
         </html>
       `;
-      mockedAxios.get.mockResolvedValue({ data: mockHtml });
+      mockedAxiosGet.mockResolvedValue({ data: mockHtml });
 
       const animalData = await scrapeSingleAnimalData('123');
       const expectedData: Animal = {
@@ -80,12 +79,12 @@ describe('scrapeAnimalData', () => {
           </div>
         </body></html>
       `;
-      mockedAxios.get
+      mockedAxiosGet
         .mockResolvedValueOnce({ data: mockHtml1 })
         .mockResolvedValueOnce({ data: mockHtml2 });
 
       const result = await scrapeAllAnimalData(['1', '2']);
-      expect(mockedAxios.get).toHaveBeenCalledTimes(2);
+      expect(mockedAxiosGet).toHaveBeenCalledTimes(2);
       expect(result[0].name).toBe('Dog1');
       expect(result[1].name).toBe('Dog2');
     });

@@ -11,5 +11,7 @@ module.exports = {
   },
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    'cheerio': '<rootDir>/tests/mocks/cheerio.ts',
+    'lodash': '<rootDir>/tests/mocks/lodash.ts',
   },
 };

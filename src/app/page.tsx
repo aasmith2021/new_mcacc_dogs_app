@@ -17,6 +17,7 @@ import { FilterControls } from './components/FilterControls';
 import { LoadingIndicator } from './components/LoadingIndicator';
 
 const SORTABLE_FIELDS: (keyof Animal)[] = ['id', 'name', 'breed', 'age', 'gender', 'weight', 'arrivalDate', 'location', 'level', 'adoptionFee'];
+const NUMERICAL_SORT_FIELDS = ['age', 'weight', 'adoptionFee'];
 
 const getAdoptionFeeValue = (fee: string): number => {
   if (!fee) return 0;
@@ -38,10 +39,16 @@ const getAgeValue = (age: string): number => {
     return match ? parseInt(match[1], 10) : 0;
   }
 
+  const parseWeeks = (input: string): number => {
+    const match = input.match(/\b(\d+)\s+week(s)?\b/i);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+
   const years = parseYears(age);
   const months = parseMonths(age);
+  const weeks = parseWeeks(age);
 
-  return years + (months / 12);
+  return years + (months / 12) + (weeks / 52);
 };
 
 export default function Home() {
@@ -137,8 +144,26 @@ export default function Home() {
     if (!filteredAnimalData) return null;
 
     return [...filteredAnimalData].sort((a, b) => {
-      const aValue = a[sortBy];
-      const bValue = b[sortBy];
+      let aValue: string | number;
+      let bValue: string | number;
+  
+      switch (sortBy) {
+        case 'age':
+          aValue = getAgeValue(a[sortBy]);
+          bValue = getAgeValue(b[sortBy]);
+          break;
+        case 'adoptionFee':
+          aValue = getAdoptionFeeValue(a[sortBy]);
+          bValue = getAdoptionFeeValue(b[sortBy]);
+          break;
+        case 'weight':
+          aValue = parseFloat(a[sortBy]);
+          bValue = parseFloat(b[sortBy]);
+          break;
+        default:
+          aValue = a[sortBy];
+          bValue = b[sortBy];
+      }
 
       if (aValue < bValue) return -1;
       if (aValue > bValue) return 1;
